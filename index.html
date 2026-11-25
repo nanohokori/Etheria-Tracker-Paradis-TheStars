@@ -1556,8 +1556,9 @@ async function drawBuild(id){await preloadSetIcons();
   // info band
   const IX=PX+22,IW=PW-44,lines=[];
   const attrs=ATTRS.map(([k,l])=>{const v=fmtAttr(k,b.stats[k]);return v?[l,v]:null}).filter(Boolean);
-  const AGW=attrs.length?Math.min(300,IW*.52):0,arows=Math.ceil(attrs.length/2),LW=IW-(AGW?AGW+18:0);
-  const leftH=sd?30+pasL.length*20:0,rightH=arows?arows*24+8:0,lowH=Math.max(leftH,rightH);
+  const AGW=attrs.length?Math.min(330,IW*.56):0,arows=Math.ceil(attrs.length/2),LW=IW-(AGW?AGW+18:0);
+  const pasW=pasL.map(p=>wrap(c,pasText(p),LW-12,13,"600")),shW=sd?wrap(c,"Shell : "+sd.name,LW,15,"700"):[];
+  const leftH=sd?12+shW.length*20+pasW.reduce((a,l)=>a+l.length*18+2,0):0,rightH=arows?arows*24+8:0,lowH=Math.max(leftH,rightH);
   let bandH=22+34+24+(mx.length?40:0)+(lowH?lowH+10:0)+16;
   const by=TOP+PH-bandH,gr=c.createLinearGradient(0,by-90,0,by+40);gr.addColorStop(0,"#0e0f1200");gr.addColorStop(1,"#0e0f12f2");c.fillStyle=gr;c.fillRect(PX,by-90,PW,90+40);c.fillStyle="#0e0f12f2";c.fillRect(PX,by+40,PW,bandH);
   c.restore();
@@ -1571,7 +1572,8 @@ async function drawBuild(id){await preloadSetIcons();
   if(arows){const gx=IX+IW-AGW,gy=bottom-arows*24-4,cw2=(AGW-10)/2;rr(c,gx-10,gy-6,AGW+10,arows*24+10,10,"#17181ccc","#2c2e36");
     attrs.forEach(([l,v],n)=>{const cl=n%2,row=Math.floor(n/2),x0=gx+cl*(cw2+10),yy=gy+row*24+15;c.font=`750 14px ${FONT}`;const vw=c.measureText(String(v)).width;txt(c,l,x0,yy,12,"#8c8e98","600",undefined,cw2-vw-12);txt(c,v,x0+cw2-4,yy,14,"#e7e8ec","750","right")});
     c.fillStyle="#ffffff14";c.fillRect(gx+cw2+4,gy,1,arows*24-4)}
-  if(sd){let sy=bottom-leftH+18;txt(c,"Shell : "+sd.name,IX,sy,15,"#e7e8ec","700",undefined,LW);pasL.forEach(p=>{sy+=20;const r=pasRar(p,b.shell),cc=r?SH_RC[r]:"#d6d6da";c.fillStyle=cc;c.fillRect(IX,sy-11,3,13);txt(c,pasText(p),IX+10,sy,13,cc,"600",undefined,LW-10)})}
+  if(sd){let sy=bottom-leftH+18;shW.forEach((l,n)=>{txt(c,l,IX,sy,15,"#e7e8ec","700");if(n<shW.length-1)sy+=20});
+    pasL.forEach((p,pi)=>{const r=pasRar(p,b.shell),cc=r?SH_RC[r]:"#d6d6da";sy+=20;const ls=pasW[pi];c.fillStyle=cc;c.fillRect(IX,sy-11,3,13+(ls.length-1)*18);ls.forEach((l,n)=>txt(c,l,IX+10,sy+n*18,13,cc,"600"));sy+=(ls.length-1)*18})}
   // footer
   c.fillStyle="#ffffff14";c.fillRect(P,H-FOOT,W-2*P,1);
   txt(c,S.player||"",P,H-FOOT+32,14,"#a3a5ae","600");
