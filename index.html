@@ -918,6 +918,16 @@ function U(key){const d=IMG[key];if(!d)return"";if(!BURL[key]){try{const[h,b]=d.
 function dropURL(key){if(BURL[key]){URL.revokeObjectURL(BURL[key]);delete BURL[key]}}
 async function imgSet(id,data){if(SITE&&!ADMIN){toast("Les images sont gérées par l'admin du site");return null}dropURL(id);IMG[id]=data;IMGC={};if(SITE){markDirty();return true}if(IDB)return idbTx("readwrite",st=>st.put(data,id));try{localStorage.setItem(KEY+"-img",JSON.stringify(IMG));return true}catch(e){delete IMG[id];toast("Stockage plein");return null}}
 async function imgDel(id){if(SITE&&!ADMIN)return;dropURL(id);delete IMG[id];IMGC={};if(SITE){markDirty();return}if(IDB)return idbTx("readwrite",st=>st.delete(id));try{localStorage.setItem(KEY+"-img",JSON.stringify(IMG))}catch(e){}}
+const HDART={"dokidoki":"a/a2/DokiDoki.png","helkid":"1/1f/Helkid.png","massiah":"1/16/Massiah.png","lilith":"7/7e/Lilith.png","heinrich":"0/0c/Heinrich.png","lian":"e/e4/Lian.png","kloss":"2/21/Kloss.png","lily":"0/0a/Lily.png","beyontin":"6/6b/Beyontin.png","lingluo":"5/5d/Lingluo.png","khloros":"e/e6/Khloros.png","borgne":"c/cf/Borgne.png","mia":"4/45/Mia.png","freya":"2/29/Freya.png","celince":"1/1d/Celince.png","mio":"2/23/Mio.png","holden":"5/53/Holden.png","hoyan":"6/69/Hoyan.png","nahor":"2/28/Nahor.png","fuqiu":"e/e1/Fuqiu.png","liliam":"5/51/Liliam.png","batsby":"c/ce/Batsby.png","kokardi":"9/93/Kokardi.png","mizusumi-aya":"4/43/Mizusumi_Aya.png","nevette":"a/a3/Nevette.png","lowan":"d/db/Lowan.png","fiamelia":"d/d2/Fiamelia.png","kethos":"5/53/Kethos.png","bornova":"8/87/Bornova.png","gianc":"1/19/Gianc.png","airon":"4/47/Airon.png","asal":"8/8d/Asal.png","luvia":"c/c1/Luvia.png","xiada":"c/c1/Xiada.png","tiamat":"9/9a/Tiamat.png","rahu":"8/81/Rahu.png","veronika":"2/21/Veronika.png","rilmocha":"9/90/Rilmocha.png","cachi-the-guard":"c/c9/Cachi_the_Guard.png","turandot":"e/ec/Turandot.png","valerian":"d/d5/Valerian.png","viper":"9/99/Viper.png","dinah":"f/f3/Dinah.png","diting":"6/65/Diting.png","sania":"a/a5/Sania.png","shadow-sania":"c/cc/Shadow_Sania.png","rosa":"8/86/Rosa.png","tsukiyo-mi":"e/ea/Tsukiyo_Mi.png","yeli":"3/39/Yeli.png","sharon":"5/5c/Sharon.png","ninfoniel":"3/37/Ninfoniel.png","plume":"7/75/Plume.png","raymerry":"1/10/Raymerry.png","the-lumiwarden-diting":"f/f9/The_Lumiwarden_Diting.png","santik":"c/c9/Santik.png","senyu":"2/27/Senyu.png","palin":"9/99/Palin.png","xuan-li":"8/8b/Xuan_Li.png","xuan-chi":"b/b3/Xuan_Chi.png","qano":"8/85/Qano.png","syen":"0/06/Syen.png"};
+const HDBASE="https://static.wikia.nocookie.net/etheriarestart/images/";
+const hdUrl=id=>HDART[id]?HDBASE+HDART[id]+"/revision/latest/scale-to-width-down/1400":"";
+const HDC={};
+function loadImgCORS(src){return new Promise((res,rej)=>{const i=new Image();i.crossOrigin="anonymous";i.onload=()=>res(i);i.onerror=rej;i.src=src})}
+async function hdImg(id){if(HDC[id]!==undefined)return HDC[id];let im=null;
+  if(IMG["hd:"+id])im=await loadImg(IMG["hd:"+id]).catch(()=>null);
+  if(!im&&hdUrl(id))im=await loadImgCORS(hdUrl(id)).catch(()=>null);
+  HDC[id]=im;return im}
+async function fileToDataHD(f,max=1400){const url=URL.createObjectURL(f);try{const img=await loadImg(url);const k=Math.min(1,max/img.width,max/img.height),c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);const g=c.getContext("2d");g.imageSmoothingQuality="high";g.drawImage(img,0,0,c.width,c.height);return{data:c.toDataURL("image/webp",.9),w:img.width,h:img.height}}finally{URL.revokeObjectURL(url)}}
 async function fileToData(f){
   const url=URL.createObjectURL(f);try{
     const img=await loadImg(url);const maxW=420,maxH=620;
@@ -1155,9 +1165,9 @@ function renderStage(){
 function fillPInfo(){const el=$("pInfo");if(!el||!curB)return;const u=S.units.find(x=>x.id===curB),i=inv(curB),mx=matrices(getB(curB)).filter(m=>m.active);
   el.innerHTML=`<b>${esc(u.name)}</b><div class="pm"><span class="edot" style="background:${COL[u.type]};width:7px;height:7px"></span>${u.kinetic?"Kinetic ":""}${u.type} · ${awakened(u)?"Éveil":i.owned?"P"+i.p+" · "+skillStr(i):"Non possédé"}</div>${mx.length?`<div class="pc">${mx.map(m=>`<span class="setChip" data-n="${esc(m.name)}" style="--c:${m.color}">${setIco(m.name,m.color)}${esc(m.name)}<b>${m.pts}</b></span>`).join("")}</div>`:""}`}
 function renderPortrait(){
-  const u=S.units.find(x=>x.id===curB),p=U(curB);
-  $("portrait").className="portrait"+(p?"":" noimg");
-  $("portrait").innerHTML=(p?`<img src="${p}" alt="">`:`<div class="big">${esc(u.name[0])}</div>`)+
+  const u=S.units.find(x=>x.id===curB),p=U(curB),hp=IMG["hd:"+curB]?U("hd:"+curB):(SITE?hdUrl(curB):"");
+  $("portrait").className="portrait"+(p||hp?"":" noimg");
+  $("portrait").innerHTML=(hp?`<img src="${hp}" alt="" onerror="this.onerror=null;${p?`this.src='${p}'`:`this.remove()`}">`:p?`<img src="${p}" alt="">`:`<div class="big">${esc(u.name[0])}</div>`)+
     `<div class="pInfo" id="pInfo"></div><div class="upl"><button class="btn sm" id="pUp"><svg class="ico" style="width:14px;height:14px"><use href="#i-img"/></svg>${p?"Changer":"Ajouter"} l'image</button>${p?`<button class="btn sm danger" id="pDel">Retirer</button>`:""}</div>`;fillPInfo();
 }
 function renderSlotPane(){
@@ -1268,7 +1278,7 @@ $("bOv").addEventListener("click",e=>{
   if(e.target.closest("#slotImg")){imgAction(ownKey(getB(curB).mods[curSlot]),"Ce module a déjà une image.");return}
   if(e.target.closest("#slotClear")){getB(curB).mods[curSlot]={subs:[{},{},{},{}]};save();renderStage();renderSlotPane();renderDerived();return}
   if(e.target.closest("#pUp")){$("pFile").click();return}
-  if(e.target.closest("#pDel")){imgDel(curB).then(()=>{renderPortrait();refreshBAv()});return}
+  if(e.target.closest("#pDel")){const id=curB;Promise.all([imgDel(id),IMG["hd:"+id]?imgDel("hd:"+id):null]).then(()=>{delete HDC[id];renderPortrait();refreshBAv()});return}
 });
 function onBuildInput(e){
   if(!curB)return;const t=e.target,b=getB(curB);
@@ -1339,7 +1349,7 @@ async function takeImages(files,html,text,target){
       const r=await ask("Où mettre cette image ?",[{k:"no",l:"Annuler"},{k:"mod",l:"Sur le module "+SLOTS[curSlot].n},{k:"por",l:"Portrait du perso",c:"pri"}]);
       if(r==="no")continue;if(r==="mod"){const m=getB(curB).mods[curSlot],kind=SLOTKIND[curSlot];try{await imgSet(m.set?modKey(m.set,kind):"mod:any:"+kind,await fileToData(f));afterSetIcon();toast("Image ajoutée au module "+SLOTS[curSlot].n)}catch(e){toast("Image illisible")}continue}}
     if(!u&&target)u=S.units.find(x=>x.id===target);
-    if(u){try{await imgSet(u.id,await fileToData(f));ok.push(u)}catch(e){toast("Image illisible")}}
+    if(u){try{const hd=await fileToDataHD(f);if(Math.max(hd.w,hd.h)>=800){await imgSet("hd:"+u.id,hd.data);delete HDC[u.id]}await imgSet(u.id,await fileToData(f));ok.push(u)}catch(e){toast("Image illisible")}}
     else pkQueue.push(f);
   }
   ok.forEach(u=>refreshCard(u.id));
@@ -1505,7 +1515,7 @@ function avatarC(c,u,img,x,y,sz){const col=COL[u.type];c.save();c.beginPath();c.
 function bg(c,W,H,col){c.fillStyle="#17181c";c.fillRect(0,0,W,H);if(col){const r=c.createRadialGradient(W*.33,H*.45,10,W*.33,H*.45,H*.62);r.addColorStop(0,col+"26");r.addColorStop(1,"#0000");c.fillStyle=r;c.fillRect(0,0,W,H)}}
 
 async function drawBuild(id){await preloadSetIcons();
-  const u=S.units.find(x=>x.id===id),i=inv(id),b=getB(id),col=COL[u.type],img=await portraitImg(id);
+  const u=S.units.find(x=>x.id===id),i=inv(id),b=getB(id),col=COL[u.type],img=(await hdImg(id))||(await portraitImg(id));
   const MODIMG=await Promise.all(b.mods.map(async(m,k)=>{const d=modImg(m,k);return d?await loadImg(d).catch(()=>null):null}));
   const mx=matrices(b).filter(m=>m.active),sd=shellOf(b),pasL=(b.shell.pas||[]).filter(p=>pasText(p));
   const W=1440,P=32,COLW=420,BH=300,BG=18,TOP=36,FOOT=54,ARC=44;
@@ -1542,9 +1552,10 @@ async function drawBuild(id){await preloadSetIcons();
   else{const r=c.createRadialGradient(PX+PW/2,TOP+PH*.38,10,PX+PW/2,TOP+PH*.4,PW);r.addColorStop(0,col+"40");r.addColorStop(1,"#0000");c.fillStyle=r;c.fillRect(PX,TOP,PW,PH);c.shadowColor=col;c.shadowBlur=70;txt(c,u.name[0],PX+PW/2,TOP+PH*.48,240,col+"aa","900","center");c.shadowBlur=0}
   // info band
   const IX=PX+22,IW=PW-44,lines=[];
-  const attrs=ATTRS.map(([k,l])=>{const v=fmtAttr(k,b.stats[k]);return v?l+" "+v:""}).filter(Boolean);
-  const attrL=attrs.length?wrap(c,attrs.join("   ·   "),IW,13.5,"500"):[];
-  let bandH=22+34+24+(mx.length?40:0)+attrL.length*20+(sd?30+pasL.length*20:0)+16;
+  const attrs=ATTRS.map(([k,l])=>{const v=fmtAttr(k,b.stats[k]);return v?[l,v]:null}).filter(Boolean);
+  const AGW=attrs.length?Math.min(300,IW*.52):0,arows=Math.ceil(attrs.length/2),LW=IW-(AGW?AGW+18:0);
+  const leftH=sd?30+pasL.length*20:0,rightH=arows?arows*24+8:0,lowH=Math.max(leftH,rightH);
+  let bandH=22+34+24+(mx.length?40:0)+(lowH?lowH+10:0)+16;
   const by=TOP+PH-bandH,gr=c.createLinearGradient(0,by-90,0,by+40);gr.addColorStop(0,"#0e0f1200");gr.addColorStop(1,"#0e0f12f2");c.fillStyle=gr;c.fillRect(PX,by-90,PW,90+40);c.fillStyle="#0e0f12f2";c.fillRect(PX,by+40,PW,bandH);
   c.restore();
   let y=by+40;
@@ -1553,8 +1564,11 @@ async function drawBuild(id){await preloadSetIcons();
   y+=24;c.fillStyle=col;c.beginPath();c.arc(IX+5,y-5,4.5,0,Math.PI*2);c.fill();
   txt(c,[(u.kinetic?"Kinetic ":"")+u.type,awakened(u)?"Éveil":i.owned?"P"+i.p+" · "+skillStr(i):"Non possédé",b.role].filter(Boolean).join("  ·  "),IX+16,y,14,"#c3c5cc","500",undefined,IW-16);
   if(mx.length){y+=14;let x=IX;mx.forEach(m=>{c.font=`600 14px ${FONT}`;const nw=c.measureText(m.name).width;c.font=`800 17px ${FONT}`;const pw=c.measureText(String(m.pts)).width;const w=nw+pw+52;rr(c,x,y,w,30,8,"#1e1f24","#363841");setGlyph(c,m.name,x+8,y+5,18,20,m.color,false);txt(c,m.name,x+32,y+20,14,"#e7e8ec","600");txt(c,m.pts,x+40+nw,y+21,17,"#c6e33a","800");x+=w+8});y+=30}
-  attrL.forEach(l=>{y+=20;txt(c,l,IX,y,13.5,"#a3a5ae","500")});
-  if(sd){y+=28;txt(c,"Shell : "+sd.name,IX,y,15,"#e7e8ec","700",undefined,IW);pasL.forEach(p=>{y+=20;const r=pasRar(p,b.shell),cc=r?SH_RC[r]:"#d6d6da";c.fillStyle=cc;c.fillRect(IX,y-11,3,13);txt(c,pasText(p),IX+10,y,13,cc,"600",undefined,IW-10)})}
+  const ly0=y+10,bottom=ly0+lowH;
+  if(arows){const gx=IX+IW-AGW,gy=bottom-arows*24-4,cw2=(AGW-10)/2;rr(c,gx-10,gy-6,AGW+10,arows*24+10,10,"#17181ccc","#2c2e36");
+    attrs.forEach(([l,v],n)=>{const cl=n%2,row=Math.floor(n/2),x0=gx+cl*(cw2+10),yy=gy+row*24+15;c.font=`750 14px ${FONT}`;const vw=c.measureText(String(v)).width;txt(c,l,x0,yy,12,"#8c8e98","600",undefined,cw2-vw-12);txt(c,v,x0+cw2-4,yy,14,"#e7e8ec","750","right")});
+    c.fillStyle="#ffffff14";c.fillRect(gx+cw2+4,gy,1,arows*24-4)}
+  if(sd){let sy=bottom-leftH+18;txt(c,"Shell : "+sd.name,IX,sy,15,"#e7e8ec","700",undefined,LW);pasL.forEach(p=>{sy+=20;const r=pasRar(p,b.shell),cc=r?SH_RC[r]:"#d6d6da";c.fillStyle=cc;c.fillRect(IX,sy-11,3,13);txt(c,pasText(p),IX+10,sy,13,cc,"600",undefined,LW-10)})}
   // footer
   c.fillStyle="#ffffff14";c.fillRect(P,H-FOOT,W-2*P,1);
   txt(c,S.player||"",P,H-FOOT+32,14,"#a3a5ae","600");
@@ -1565,8 +1579,9 @@ function fmtAttr(k,v){if(v==null||v==="")return"";const n=numOnly(v);if(!n)retur
 async function drawSummary(){await preloadSetIcons();
   const owned=S.units.filter(u=>!awakened(u)&&S.inv[u.id]&&S.inv[u.id].owned).sort((a,b)=>{const ia=S.inv[a.id],ib=S.inv[b.id];return(ib.p*1000+latOf(ib))-(ia.p*1000+latOf(ia))||a.name.localeCompare(b.name)});
   const awk=AWAKS.filter(([n])=>S.awak[n]);
-  const all=[...owned.map(u=>({u})),...awk.map(([n])=>S.units.find(u=>u.awak&&u.name===n)).filter(Boolean).map(u=>({awk:true,u}))];
-  const rank=it=>it.awk?99:(S.inv[it.u.id].p*1000+latOf(S.inv[it.u.id]));
+  const missing=S.units.filter(u=>!awakened(u)&&!(S.inv[u.id]&&S.inv[u.id].owned)).map(u=>({miss:true,u}));
+  const all=[...owned.map(u=>({u})),...awk.map(([n])=>S.units.find(u=>u.awak&&u.name===n)).filter(Boolean).map(u=>({awk:true,u})),...missing];
+  const rank=it=>it.miss?-1:it.awk?99:(S.inv[it.u.id].p*1000+latOf(S.inv[it.u.id]));
   const groups=TYPES.map(t=>({t,list:all.filter(it=>it.u.type===t).sort((a,b)=>rank(b)-rank(a)||a.u.name.localeCompare(b.u.name))})).filter(g=>g.list.length);
   const others=all.filter(it=>!TYPES.includes(it.u.type));if(others.length)groups.push({t:"Autres",list:others});
   const items=groups.flatMap(g=>g.list);
@@ -1593,13 +1608,13 @@ async function drawSummary(){await preloadSetIcons();
     txt(c,g.t,P+22,yy+24,18,"#e7e8ec","750");c.font=`750 18px ${FONT}`;const tw=c.measureText(g.t).width;txt(c,g.list.length+" unité"+(g.list.length>1?"s":""),P+32+tw,yy+24,13,"#6c6e78","500");
     c.fillStyle=gc+"40";c.fillRect(P+44+tw+90,yy+18,W-2*P-(44+tw+90),1)});
   for(let idx=0;idx<items.length;idx++){
-    const it=items[idx],x=pos[idx].x,yy=y+pos[idx].y,u=it.u,col=COL[u.type];
+    const it=items[idx],x=pos[idx].x,yy=y+pos[idx].y,u=it.u,col=it.miss?"#4a4c55":COL[u.type];
     const img=await portraitImg(u.id);
     c.save();c.beginPath();c.roundRect(x,yy,cw,ch,14);c.clip();
     c.fillStyle="#1e1f24";c.fillRect(x,yy,cw,ch);
     const g0=c.createRadialGradient(x+cw/2,yy+AH*.3,5,x+cw/2,yy+AH*.4,cw);g0.addColorStop(0,col+"55");g0.addColorStop(1,"#131418");c.fillStyle=g0;c.fillRect(x,yy,cw,AH);
     c.save();c.beginPath();c.rect(x,yy,cw,AH);c.clip();
-    if(img){c.imageSmoothingEnabled=true;c.imageSmoothingQuality="high";coverImg(c,img,x,yy,cw,AH,.1)}
+    if(img){c.imageSmoothingEnabled=true;c.imageSmoothingQuality="high";if(it.miss)c.filter="grayscale(1) brightness(.45)";coverImg(c,img,x,yy,cw,AH,.1);c.filter="none"}
     else{c.shadowColor=col;c.shadowBlur=40;txt(c,u.name[0],x+cw/2,yy+AH*.55,96,col+"aa","800","center");c.shadowBlur=0}
     const gr=c.createLinearGradient(0,yy+AH*.5,0,yy+AH);gr.addColorStop(0,"#1e1f2400");gr.addColorStop(.55,"#1e1f24b0");gr.addColorStop(1,"#1e1f24");c.fillStyle=gr;c.fillRect(x,yy+AH*.5,cw,AH*.5);
     c.restore();
@@ -1608,14 +1623,16 @@ async function drawSummary(){await preloadSetIcons();
     c.restore();rr(c,x,yy,cw,ch,14,null,"#30323a");
     // badges
     let bx=x+10;const badge=(t,max)=>{c.font=`750 13px ${FONT}`;const w=c.measureText(t).width+16;rr(c,bx,yy+12,w,24,7,max?"#f5b82e":"#0d0e11d0",max?"#f5b82e":"#ffffff30");txt(c,t,bx+w/2,yy+29,13,max?"#17181c":"#ffffff","750","center");bx+=w+5};
-    if(it.awk){badge("Éveil",true)}else{const i=S.inv[u.id];if(i.p===5&&skillStr(i)==="555")badge("MAX",true);else{badge("P"+i.p);badge(skillStr(i))}}
+    if(it.miss){c.font=`600 12px ${FONT}`;const t="Non possédé",w=c.measureText(t).width+16;rr(c,bx,yy+12,w,24,7,"#0d0e11d0","#ffffff30");txt(c,t,bx+w/2,yy+28.5,12,"#c3c5cc","600","center")}
+    else if(it.awk){badge("Éveil",true)}else{const i=S.inv[u.id];if(i.p===5&&skillStr(i)==="555")badge("MAX",true);else{badge("P"+i.p);badge(skillStr(i))}}
     // name
-    txt(c,u.name,x+12,yy+AH-26,19,"#ffffff","750",undefined,cw-24);
+    txt(c,u.name,x+12,yy+AH-26,19,it.miss?"#9a9ca5":"#ffffff","750",undefined,cw-24);
     c.fillStyle=col;c.beginPath();c.arc(x+16,yy+AH-11,4,0,Math.PI*2);c.fill();
     txt(c,(u.kinetic?"Kinetic ":"")+u.type,x+26,yy+AH-6,12.5,"#ffffffb8","500");
     // build info
     const by=yy+AH+12;
-    {const i=inv(u.id),tk=hasBuild(u.id,i.tab)?i.tab:TABS.map(t=>t.k).find(t=>hasBuild(u.id,t));
+    if(it.miss){}
+    else{const i=inv(u.id),tk=hasBuild(u.id,i.tab)?i.tab:TABS.map(t=>t.k).find(t=>hasBuild(u.id,t));
       if(tk){const b=getB(u.id,tk),mx=matrices(b).filter(m=>m.active),t=TAB[tk];let cx=x+12;
         c.font=`750 11px ${FONT}`;const tw=c.measureText(t.n).width+14;rr(c,cx,by,tw,24,6,t.c+"30",t.c);txt(c,t.n,cx+tw/2,by+16,11,t.c,"750","center");cx+=tw+6;
         mx.forEach(m=>{c.font=`800 14px ${FONT}`;const w=c.measureText(String(m.pts)).width+36;if(cx+w>x+cw-10)return;rr(c,cx,by,w,24,6,"#17181c","#30323a");setGlyph(c,m.name,cx+5,by+3,18,18,m.color);txt(c,m.pts,cx+28,by+17,14,"#c6e33a","800");cx+=w+5});
@@ -1664,7 +1681,7 @@ function setMode(){document.body.classList.toggle("locked",SITE&&!ADMIN);documen
   const ab=$("adminBar");if(ab)ab.hidden=!(SITE&&ADMIN);const am=$("admItem");if(am){am.hidden=!SITE;am.textContent=ADMIN?"Quitter le mode admin":"Mode admin"}}
 async function ghApi(path,opt={}){const c=admCfg();const r=await fetch("https://api.github.com/repos/"+c.owner+"/"+c.repo+path,{...opt,headers:{"Accept":"application/vnd.github+json","Authorization":"Bearer "+c.token,...(opt.headers||{})}});const t=await r.text();let j=null;try{j=JSON.parse(t)}catch(e){}if(!r.ok)throw new Error((j&&j.message)||("HTTP "+r.status));return j}
 function b64utf8(str){const bytes=new TextEncoder().encode(str);let bin="";for(let i=0;i<bytes.length;i+=0x8000)bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));return btoa(bin)}
-function buildAssets(){const images={};for(const[k,v]of Object.entries(IMG))if(!k.startsWith("mb:"))images[k]=v;
+function buildAssets(){const images={};for(const[k,v]of Object.entries(IMG))if(!k.startsWith("mb:")&&!(k.startsWith("hd:")&&HDART[k.slice(3)]))images[k]=v;
   return{app:"er-tracker-assets",v:1,updated:new Date().toISOString(),units:S.units.map(u=>({id:u.id,name:u.name,type:u.type,kinetic:!!u.kinetic,awak:!!u.awak})),sets:S.sets,images}}
 async function publish(){
   if(!ADMIN)return;const btn=$("admPub");btn.disabled=true;btn.textContent="Publication…";
