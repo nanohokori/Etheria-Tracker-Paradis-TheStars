@@ -308,6 +308,35 @@ body.locked .heroSub kbd{display:none}
 .adminBar b{color:#f5b82e}
 #admPub.dirty{box-shadow:0 0 0 2px #f5b82e}
 
+/* ---------- v4 : boutons de partage dorés ---------- */
+.btn.share{position:relative;overflow:hidden;isolation:isolate;border:1px solid #f6d77a;color:#2b1d02;font-weight:700;letter-spacing:.01em;padding:8px 16px;
+  background:linear-gradient(135deg,#fbe08a 0%,#f2c14e 45%,#e0a32e 100%);
+  box-shadow:0 0 0 1px #00000040,0 6px 18px -6px #f2c14e99,inset 0 1px 0 #fff6d0;transition:transform .15s,box-shadow .2s,filter .2s}
+.btn.share .ico{width:17px;height:17px}
+.btn.share::after{content:"";position:absolute;top:-20%;bottom:-20%;left:-60%;width:40%;z-index:-1;background:linear-gradient(100deg,transparent,#fffbe8cc,transparent);transform:skewX(-18deg);animation:shareSheen 3.6s ease-in-out infinite}
+.btn.share:hover{filter:brightness(1.06) saturate(1.05);box-shadow:0 0 0 1px #00000040,0 8px 24px -6px #f2c14ecc,inset 0 1px 0 #fff6d0;transform:translateY(-1px)}
+.btn.share:active{transform:translateY(0) scale(.98)}
+@keyframes shareSheen{0%,55%{left:-60%}85%,100%{left:130%}}
+@media (prefers-reduced-motion:reduce){.btn.share::after{animation:none;display:none}}
+
+/* ---------- v4 : lisibilité et finitions ---------- */
+:root{--line:#2b2d34;--mute:#b0b2ba;--dim:#7a7c86}
+body{font-size:14.5px;line-height:1.5;text-rendering:optimizeLegibility}
+.top{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.btn{transition:background .15s,border-color .15s,color .15s,transform .15s;border-radius:10px}
+.btn:active{transform:scale(.98)}
+.hero{padding:36px 0 26px}
+.unit,.gc{border-radius:14px}
+.grid:not(.compact){gap:16px}
+.gc .uCtl .opts button{transition:background .12s,color .12s}
+.gc .uCtl .opts button:hover:not(.on){background:#ffffff0f}
+.chip{transition:background .15s,border-color .15s,color .15s}
+.count{font-size:13px;color:var(--mute)}
+input.in,select.in,.in{transition:border-color .15s,background .15s}
+.in:focus{border-color:#5a5d68!important;outline:none}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:#34363e;border-radius:6px;border:2px solid var(--bg)}::-webkit-scrollbar-track{background:transparent}
+html{scroll-behavior:smooth}
+
 /* ---------- overlays ---------- */
 .ov{position:fixed;inset:0;background:#0d0e11cc;backdrop-filter:blur(6px);display:none;align-items:flex-start;justify-content:center;padding:28px 14px;overflow:auto;z-index:50}
 .ov.open{display:flex}
@@ -530,6 +559,7 @@ kbd{font-family:inherit;font-weight:600;font-size:12px;background:var(--s3);bord
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute">
+  <symbol id="i-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></symbol>
   <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></symbol>
   <symbol id="i-dl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 21h16"/></symbol>
   <symbol id="i-more" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></symbol>
@@ -551,7 +581,7 @@ kbd{font-family:inherit;font-weight:600;font-size:12px;background:var(--s3);bord
     <svg class="logo" viewBox="0 0 26 28" fill="none"><path d="M13 1.5 24 7.75v12.5L13 26.5 2 20.25V7.75z" stroke="#e7e8ec" stroke-width="1.6"/><path d="M13 8.5 18 11.4v5.2L13 19.5 8 16.6v-5.2z" fill="#e7e8ec"/></svg><div class="brand">Etheria Restart<span>Tracker</span></div>
     <span class="sp"></span>
     <button class="btn" id="pasteBtn" title="Cliquer ici puis Ctrl+V"><svg class="ico"><use href="#i-clip"/></svg><span class="hideM">Coller une image</span></button>
-    <button class="btn pri" id="copyAll"><svg class="ico"><use href="#i-copy"/></svg><span class="hideM">Copier l'image</span></button>
+    <button class="btn share" id="copyAll" title="Copie l'image de ta box, à coller sur Discord avec Ctrl+V"><svg class="ico"><use href="#i-share"/></svg><span>Partager ma box</span></button>
     <div class="menuWrap">
       <button class="btn" id="moreBtn"><svg class="ico"><use href="#i-more"/></svg></button>
       <div class="menu" id="menu">
@@ -616,7 +646,7 @@ kbd{font-family:inherit;font-weight:600;font-size:12px;background:var(--s3);bord
     <div class="bTabs" id="bTabs"></div>
     <select class="in" id="bDup" style="width:auto" title="Dupliquer ce build vers un autre onglet"><option value="">Dupliquer vers…</option></select>
     <button class="btn" id="bPng" title="Télécharger PNG"><svg class="ico"><use href="#i-dl"/></svg></button>
-    <button class="btn pri" id="bCopy"><svg class="ico"><use href="#i-copy"/></svg><span class="hideM">Copier l'image</span></button>
+    <button class="btn share" id="bCopy" title="Copie l'image du build, à coller sur Discord avec Ctrl+V"><svg class="ico"><use href="#i-share"/></svg><span>Partager mon build</span></button>
     <button class="btn ghost" data-close><svg class="ico"><use href="#i-x"/></svg></button>
   </div>
   <div class="bMain">
@@ -1590,7 +1620,7 @@ async function drawSummary(){await preloadSetIcons();
   const groups=TYPES.map(t=>({t,list:all.filter(it=>it.u.type===t).sort((a,b)=>rank(b)-rank(a)||a.u.name.localeCompare(b.u.name))})).filter(g=>g.list.length);
   const others=all.filter(it=>!TYPES.includes(it.u.type));if(others.length)groups.push({t:"Autres",list:others});
   const items=groups.flatMap(g=>g.list);
-  const cols=items.length>36?8:6,P=32,gap=14,W=cols===8?1840:1440,cw=(W-P*2-gap*(cols-1))/cols,AH=Math.round(cw*1.08),ch=AH+74;
+  const cols=items.length>36?8:6,P=32,gap=14,W=cols===8?1840:1440,cw=(W-P*2-gap*(cols-1))/cols,AH=Math.round(cw*1.08),PSH=46,ch=AH+PSH+74;
   const GH=44,pos=[];let gy=0;
   groups.forEach(g=>{g.y=gy;gy+=GH;g.list.forEach((it,n)=>{pos.push({x:P+(n%cols)*(cw+gap),y:gy+Math.floor(n/cols)*(ch+gap)})});gy+=Math.ceil(g.list.length/cols)*(ch+gap)+10});
   const HEAD=150,IMP=66,H=P+HEAD+IMP+24+Math.max(gy,ch)+60;
@@ -1629,13 +1659,22 @@ async function drawSummary(){await preloadSetIcons();
     // badges
     let bx=x+10;const badge=(t,max)=>{c.font=`750 13px ${FONT}`;const w=c.measureText(t).width+16;rr(c,bx,yy+12,w,24,7,max?"#f5b82e":"#0d0e11d0",max?"#f5b82e":"#ffffff30");txt(c,t,bx+w/2,yy+29,13,max?"#17181c":"#ffffff","750","center");bx+=w+5};
     if(it.miss){c.font=`600 12px ${FONT}`;const t="Non possédé",w=c.measureText(t).width+16;rr(c,bx,yy+12,w,24,7,"#0d0e11d0","#ffffff30");txt(c,t,bx+w/2,yy+28.5,12,"#c3c5cc","600","center")}
-    else if(it.awk){badge("Éveil",true)}else{const i=S.inv[u.id];if(i.p===5&&skillStr(i)==="555")badge("MAX",true);else{badge("P"+i.p);badge(skillStr(i))}}
+    else if(it.awk){badge("Éveil",true)}else{const i=S.inv[u.id];if(i.p===5&&skillStr(i)==="555")badge("MAX",true)}
+    // doublons (P) et skills, bien visibles
+    {const py=yy+AH+8,GOLD="#f5c84c";
+     if(it.miss){rr(c,x+10,py,cw-20,32,9,"#17181c","#26282e");txt(c,"P –   ·   – – –",x+cw/2,py+21,13,"#4a4c55","700","center")}
+     else{const i=S.inv[u.id],pp=it.awk?5:i.p,ss=it.awk?[5,5,5]:i.s;
+      rr(c,x+10,py,cw-20,32,9,"#17181c","#30323a");
+      const pg=pp===5;c.font=`800 17px ${FONT}`;txt(c,"P"+pp,x+20,py+22,17,pg?GOLD:"#ffffff","800");
+      const pw=c.measureText("P"+pp).width;for(let k=0;k<5;k++){const dx=x+28+pw+k*10,dy=py+16;c.beginPath();c.moveTo(dx,dy-4.5);c.lineTo(dx+4,dy);c.lineTo(dx,dy+4.5);c.lineTo(dx-4,dy);c.closePath();c.fillStyle=k<pp?(pg?GOLD:"#c3c5cc"):"#34363e";c.fill()}
+      const SQ=24,gap2=4;let sx=x+cw-14-(SQ*3+gap2*2);
+      ss.forEach(v=>{const g=+v===5;rr(c,sx,py+4,SQ,SQ,6,g?GOLD:"#2a2c33",g?GOLD:"#3a3c45");txt(c,v,sx+SQ/2,py+21,14,g?"#2a1d05":"#e7e8ec","800","center");sx+=SQ+gap2})}}
     // name
     txt(c,u.name,x+12,yy+AH-26,19,it.miss?"#9a9ca5":"#ffffff","750",undefined,cw-24);
     c.fillStyle=col;c.beginPath();c.arc(x+16,yy+AH-11,4,0,Math.PI*2);c.fill();
     txt(c,(u.kinetic?"Kinetic ":"")+u.type,x+26,yy+AH-6,12.5,"#ffffffb8","500");
     // build info
-    const by=yy+AH+12;
+    const by=yy+AH+PSH+10;
     if(it.miss){}
     else{const i=inv(u.id),tk=hasBuild(u.id,i.tab)?i.tab:TABS.map(t=>t.k).find(t=>hasBuild(u.id,t));
       if(tk){const b=getB(u.id,tk),mx=matrices(b).filter(m=>m.active),t=TAB[tk];let cx=x+12;
@@ -1655,7 +1694,7 @@ async function outImage(cv,mode,name){
     try{
       if(!navigator.clipboard||!window.ClipboardItem)throw 0;
       await navigator.clipboard.write([new ClipboardItem({"image/png":new Promise(r=>cv.toBlob(r,"image/png"))})]);
-      toast("Image copiée — colle-la avec Ctrl+V");return;
+      toast("Image copiée ! Colle-la sur Discord avec Ctrl+V");return;
     }catch(e){toast("Copie bloquée ici : je propose le téléchargement à la place")}
   }
   const blob=await new Promise(r=>cv.toBlob(r,"image/png"));dl(blob,name+".png");
