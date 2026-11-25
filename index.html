@@ -232,6 +232,8 @@ input::-webkit-calendar-picker-indicator{display:none!important}
 .portrait .upl{bottom:auto!important;top:12px}
 .portrait{background:radial-gradient(90% 70% at 50% 35%,color-mix(in srgb,var(--el) 16%,transparent),transparent 75%);box-shadow:inset 0 0 0 1px var(--line)}
 .gc .buildBtn{gap:7px;padding:0 9px 0 10px;font-size:13px}.gc .buildBtn span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gc .buildBtn .ch{display:none}
+@keyframes hdIn{from{opacity:.55}to{opacity:1}}
+.portrait>img.hdIn{animation:hdIn .4s ease-out}
 .pInfo{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:16px 18px 16px;background:linear-gradient(180deg,#0000,#0e0f12e6 40%)}
 .pInfo b{display:block;font-size:20px;font-weight:700;letter-spacing:-.01em}
 .pInfo .pm{font-size:12.5px;color:var(--mute);display:flex;gap:6px;align-items:center;margin-top:2px}
@@ -1167,8 +1169,9 @@ function fillPInfo(){const el=$("pInfo");if(!el||!curB)return;const u=S.units.fi
 function renderPortrait(){
   const u=S.units.find(x=>x.id===curB),p=U(curB),hp=IMG["hd:"+curB]?U("hd:"+curB):(SITE?hdUrl(curB):"");
   $("portrait").className="portrait"+(p||hp?"":" noimg");
-  $("portrait").innerHTML=(hp?`<img src="${hp}" alt="" onerror="this.onerror=null;${p?`this.src='${p}'`:`this.remove()`}">`:p?`<img src="${p}" alt="">`:`<div class="big">${esc(u.name[0])}</div>`)+
+  $("portrait").innerHTML=(p?`<img src="${p}" alt="">`:hp?`<img src="${hp}" alt="" onerror="this.remove()">`:`<div class="big">${esc(u.name[0])}</div>`)+
     `<div class="pInfo" id="pInfo"></div><div class="upl"><button class="btn sm" id="pUp"><svg class="ico" style="width:14px;height:14px"><use href="#i-img"/></svg>${p?"Changer":"Ajouter"} l'image</button>${p?`<button class="btn sm danger" id="pDel">Retirer</button>`:""}</div>`;fillPInfo();
+  if(hp&&p){const id=curB,hi=new Image();hi.onload=()=>{if(curB!==id)return;const el=document.querySelector("#portrait>img");if(el){el.src=hp;el.classList.add("hdIn")}};hi.src=hp}
 }
 function renderSlotPane(){
   const b=getB(curB),m=b.mods[curSlot],sl=SLOTS[curSlot],n=+m.pts||1;
