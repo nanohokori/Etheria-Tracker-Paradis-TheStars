@@ -1620,13 +1620,13 @@ async function drawSummary(){await preloadSetIcons();
   const groups=TYPES.map(t=>({t,list:all.filter(it=>it.u.type===t).sort((a,b)=>rank(b)-rank(a)||a.u.name.localeCompare(b.u.name))})).filter(g=>g.list.length);
   const others=all.filter(it=>!TYPES.includes(it.u.type));if(others.length)groups.push({t:"Autres",list:others});
   const items=groups.flatMap(g=>g.list);
-  const cols=6,P=32,gap=18,K=1.5,cw=220,AH=Math.round(cw*1.08),PSH=46,chFull=AH+PSH+120,chShort=AH+PSH+16;
+  const cols=6,P=32,gap=18,K=1.5,cw=290,AH=250,PSH=46,chFull=AH+PSH+132,chShort=AH+PSH+16;
   const CW=cw*K,W=Math.round(P*2+cols*CW+(cols-1)*gap),KH=W/1440;
   const hasB=it=>!it.miss&&TABS.some(t=>hasBuild(it.u.id,t.k));
-  const GH=60,pos=[];let gy=0;
+  const GH=Math.round(46*KH),pos=[];let gy=0;
   groups.forEach(g=>{g.y=gy;gy+=GH;for(let r0=0;r0<g.list.length;r0+=cols){const row=g.list.slice(r0,r0+cols),rh=(row.some(hasB)?chFull:chShort);row.forEach((it,n)=>pos.push({x:P+n*(CW+gap),y:gy,h:rh}));gy+=rh*K+gap}gy+=12});
   const HEAD=150*KH,IMP=66*KH,H=P+HEAD+IMP+24+Math.max(gy,chShort*K)+60;
-  const[cv,c]=mkCanvas(W,H,1.5);bg(c,W,H,null);const k=kpis();
+  const[cv,c]=mkCanvas(W,H,1.25);bg(c,W,H,null);const k=kpis();
   {const r=c.createRadialGradient(W*.5,0,10,W*.5,0,W*.6);r.addColorStop(0,"#d6334f22");r.addColorStop(1,"#0000");c.fillStyle=r;c.fillRect(0,0,W,H*.6)}
   // header
   let y=0;c.save();c.scale(KH,KH);{const W=1440;
@@ -1643,7 +1643,7 @@ async function drawSummary(){await preloadSetIcons();
   y+=66;}c.restore();y=(P+150-36+66)*KH;
   if(!items.length)txt(c,"Aucune unité possédée pour l'instant.",W/2,y+60,16,"#a3a5ae","400","center");
   groups.forEach(g=>{const gc=COL[g.t]||"#a3a5ae",yy=y+g.y;c.fillStyle=gc;c.beginPath();c.moveTo(P+6,yy+12);c.lineTo(P+12,yy+18);c.lineTo(P+6,yy+24);c.lineTo(P,yy+18);c.closePath();c.fill();
-    txt(c,g.t,P+24,yy+30,30,"#e7e8ec","750");c.font=`750 30px ${FONT}`;const tw=c.measureText(g.t).width;txt(c,g.list.length+" unité"+(g.list.length>1?"s":""),P+38+tw,yy+30,18,"#6c6e78","500");
+    const fs=Math.round(26*KH);txt(c,g.t,P+28,yy+34,fs,"#e7e8ec","750");c.font=`750 ${fs}px ${FONT}`;const tw=c.measureText(g.t).width;txt(c,g.list.length+" unité"+(g.list.length>1?"s":""),P+44+tw,yy+34,Math.round(15*KH),"#6c6e78","500");
     c.fillStyle=gc+"40";c.fillRect(P+44+tw+90,yy+18,W-2*P-(44+tw+90),1)});
   for(let idx=0;idx<items.length;idx++){
     c.save();c.translate(pos[idx].x,y+pos[idx].y);c.scale(K,K);
@@ -1685,10 +1685,10 @@ async function drawSummary(){await preloadSetIcons();
         c.font=`750 11px ${FONT}`;const tw=c.measureText(t.n).width+14;rr(c,cx,by,tw,24,6,t.c+"30",t.c);txt(c,t.n,cx+tw/2,by+16,11,t.c,"750","center");cx+=tw+6;
         mx.forEach(m=>{c.font=`800 14px ${FONT}`;const w=c.measureText(String(m.pts)).width+36;if(cx+w>x+cw-10)return;rr(c,cx,by,w,24,6,"#17181c","#30323a");setGlyph(c,m.name,cx+5,by+3,18,18,m.color);txt(c,m.pts,cx+28,by+17,14,"#c6e33a","800");cx+=w+5});
         const st=b.stats||{},SL={hp:"PV",atk:"ATQ",def:"DÉF",spd:"VIT",cr:"CRIT",cd:"DGT C.",acc:"PRÉC.",res:"RÉS"};
-        if(ATTRS.some(([k])=>fmtAttr(k,st[k]))){const gx=x+8,gw=cw-16,gy=by+32,cwc=gw/4;rr(c,gx,gy,gw,66,8,"#17181c","#2a2c33");
-          ATTRS.forEach(([k],n)=>{const col4=n%4,row=Math.floor(n/4),cx2=gx+col4*cwc+cwc/2,cy2=gy+5+row*30,v=fmtAttr(k,st[k]);
-            txt(c,SL[k],cx2,cy2+10,10.5,"#8a8c96","700","center");txt(c,v||"—",cx2,cy2+26,14.5,v?"#ffffff":"#3f4149","800","center",cwc-2)});
-          for(let q=1;q<4;q++){c.fillStyle="#ffffff0d";c.fillRect(gx+q*cwc,gy+6,1,54)}}
+        if(ATTRS.some(([k])=>fmtAttr(k,st[k]))){const gx=x+8,gw=cw-16,gy=by+34,cwc=gw/4;rr(c,gx,gy,gw,78,9,"#17181c","#2a2c33");
+          ATTRS.forEach(([k],n)=>{const col4=n%4,row=Math.floor(n/4),cx2=gx+col4*cwc+cwc/2,cy2=gy+5+row*36,v=fmtAttr(k,st[k]);
+            txt(c,SL[k],cx2,cy2+12,12,"#8a8c96","700","center");txt(c,v||"—",cx2,cy2+31,18,v?"#ffffff":"#3f4149","800","center",cwc-4)});
+          for(let q=1;q<4;q++){c.fillStyle="#ffffff0d";c.fillRect(gx+q*cwc,gy+8,1,62)}}
         else{const sd=shellOf(b);txt(c,sd?sd.name:(b.role||""),x+12,by+46,12,"#a3a5ae","500",undefined,cw-24)}}
       else txt(c,it.awk?"Éveil · pas encore de build":"Pas encore de build",x+12,by+18,12,"#6c6e78","500")}
     c.restore();
