@@ -1542,7 +1542,7 @@ async function preloadSetIcons(){for(const k of Object.keys(IMG))if(k.startsWith
 function setGlyph(c,name,x,y,w,h,color,glow){const im=name&&SETIMG[setKey(name)];if(im){const sz=Math.max(w,h);c.save();if(glow){c.shadowColor="#000";c.shadowBlur=6}c.drawImage(im,x+(w-sz)/2,y+(h-sz)/2,sz,sz);c.restore()}else hexPath(c,x,y,w,h,color,glow)}
 function hexPath(c,x,y,w,h,color,glow){c.save();if(glow){c.shadowColor=color;c.shadowBlur=8}c.beginPath();c.moveTo(x+w/2,y);c.lineTo(x+w,y+h*.25);c.lineTo(x+w,y+h*.75);c.lineTo(x+w/2,y+h);c.lineTo(x,y+h*.75);c.lineTo(x,y+h*.25);c.closePath();c.fillStyle=color;c.fill();c.restore()}
 function wrap(c,s,maxW,size,weight="400"){c.font=`${weight} ${size}px ${FONT}`;const out=[];String(s||"").split("\n").forEach(par=>{let line="";par.split(" ").forEach(w=>{const t=line?line+" "+w:w;if(c.measureText(t).width>maxW&&line){out.push(line);line=w}else line=t});out.push(line)});return out}
-function mkCanvas(w,h){const s=2,cv=document.createElement("canvas");cv.width=w*s;cv.height=h*s;const c=cv.getContext("2d");c.scale(s,s);c.imageSmoothingEnabled=true;c.imageSmoothingQuality="high";return[cv,c]}
+function mkCanvas(w,h,s=2){const cv=document.createElement("canvas");cv.width=w*s;cv.height=h*s;const c=cv.getContext("2d");c.scale(s,s);c.imageSmoothingEnabled=true;c.imageSmoothingQuality="high";return[cv,c]}
 function coverImg(c,img,x,y,w,h,posY=.15){const r=Math.max(w/img.width,h/img.height),iw=img.width*r,ih=img.height*r;c.drawImage(img,x+(w-iw)/2,y+(h-ih)*posY,iw,ih)}
 function avatarC(c,u,img,x,y,sz){const col=COL[u.type];c.save();c.beginPath();c.roundRect(x,y,sz,sz,sz*.24);c.clip();c.fillStyle=col+"33";c.fillRect(x,y,sz,sz);if(img)coverImg(c,img,x,y,sz,sz,.15);else txt(c,u.name[0],x+sz/2,y+sz*.68,sz*.42,col,"800","center");c.restore();rr(c,x,y,sz,sz,sz*.24,null,col+"88")}
 function bg(c,W,H,col){c.fillStyle="#17181c";c.fillRect(0,0,W,H);if(col){const r=c.createRadialGradient(W*.33,H*.45,10,W*.33,H*.45,H*.62);r.addColorStop(0,col+"26");r.addColorStop(1,"#0000");c.fillStyle=r;c.fillRect(0,0,W,H)}}
@@ -1620,11 +1620,12 @@ async function drawSummary(){await preloadSetIcons();
   const groups=TYPES.map(t=>({t,list:all.filter(it=>it.u.type===t).sort((a,b)=>rank(b)-rank(a)||a.u.name.localeCompare(b.u.name))})).filter(g=>g.list.length);
   const others=all.filter(it=>!TYPES.includes(it.u.type));if(others.length)groups.push({t:"Autres",list:others});
   const items=groups.flatMap(g=>g.list);
-  const cols=items.length>36?8:6,P=32,gap=14,W=cols===8?1840:1440,cw=(W-P*2-gap*(cols-1))/cols,AH=Math.round(cw*1.08),PSH=46,ch=AH+PSH+112;
-  const GH=44,pos=[];let gy=0;
-  groups.forEach(g=>{g.y=gy;gy+=GH;g.list.forEach((it,n)=>{pos.push({x:P+(n%cols)*(cw+gap),y:gy+Math.floor(n/cols)*(ch+gap)})});gy+=Math.ceil(g.list.length/cols)*(ch+gap)+10});
-  const HEAD=150,IMP=66,H=P+HEAD+IMP+24+Math.max(gy,ch)+60;
-  const[cv,c]=mkCanvas(W,H);bg(c,W,H,null);const k=kpis();
+  const cols=items.length>36?8:6,P=32,gap=18,K=1.34,W0=cols===8?1840:1440,cw=(W0-P*2-14*(cols-1))/cols,AH=Math.round(cw*1.08),PSH=46,ch=AH+PSH+112;
+  const CW=cw*K,CH=ch*K,W=Math.round(P*2+cols*CW+(cols-1)*gap);
+  const GH=52,pos=[];let gy=0;
+  groups.forEach(g=>{g.y=gy;gy+=GH;g.list.forEach((it,n)=>{pos.push({x:P+(n%cols)*(CW+gap),y:gy+Math.floor(n/cols)*(CH+gap)})});gy+=Math.ceil(g.list.length/cols)*(CH+gap)+12});
+  const HEAD=150,IMP=66,H=P+HEAD+IMP+24+Math.max(gy,CH)+60;
+  const[cv,c]=mkCanvas(W,H,1.5);bg(c,W,H,null);const k=kpis();
   {const r=c.createRadialGradient(W*.5,0,10,W*.5,0,W*.6);r.addColorStop(0,"#d6334f22");r.addColorStop(1,"#0000");c.fillStyle=r;c.fillRect(0,0,W,H*.6)}
   // header
   txt(c,S.player||"Joueur",P,P+44,42,"#ffffff","800",undefined,560);
@@ -1640,10 +1641,11 @@ async function drawSummary(){await preloadSetIcons();
   y+=IMP;
   if(!items.length)txt(c,"Aucune unité possédée pour l'instant.",W/2,y+60,16,"#a3a5ae","400","center");
   groups.forEach(g=>{const gc=COL[g.t]||"#a3a5ae",yy=y+g.y;c.fillStyle=gc;c.beginPath();c.moveTo(P+6,yy+12);c.lineTo(P+12,yy+18);c.lineTo(P+6,yy+24);c.lineTo(P,yy+18);c.closePath();c.fill();
-    txt(c,g.t,P+22,yy+24,18,"#e7e8ec","750");c.font=`750 18px ${FONT}`;const tw=c.measureText(g.t).width;txt(c,g.list.length+" unité"+(g.list.length>1?"s":""),P+32+tw,yy+24,13,"#6c6e78","500");
+    txt(c,g.t,P+22,yy+26,24,"#e7e8ec","750");c.font=`750 24px ${FONT}`;const tw=c.measureText(g.t).width;txt(c,g.list.length+" unité"+(g.list.length>1?"s":""),P+34+tw,yy+26,15,"#6c6e78","500");
     c.fillStyle=gc+"40";c.fillRect(P+44+tw+90,yy+18,W-2*P-(44+tw+90),1)});
   for(let idx=0;idx<items.length;idx++){
-    const it=items[idx],x=pos[idx].x,yy=y+pos[idx].y,u=it.u,col=it.miss?"#4a4c55":COL[u.type];
+    c.save();c.translate(pos[idx].x,y+pos[idx].y);c.scale(K,K);
+    const it=items[idx],x=0,yy=0,u=it.u,col=it.miss?"#4a4c55":COL[u.type];
     const img=await portraitImg(u.id);
     c.save();c.beginPath();c.roundRect(x,yy,cw,ch,14);c.clip();
     c.fillStyle="#1e1f24";c.fillRect(x,yy,cw,ch);
@@ -1683,10 +1685,11 @@ async function drawSummary(){await preloadSetIcons();
         const st=b.stats||{},SL={hp:"PV",atk:"ATQ",def:"DÉF",spd:"VIT",cr:"CRIT",cd:"DGT C.",acc:"PRÉC.",res:"RÉS"};
         if(ATTRS.some(([k])=>fmtAttr(k,st[k]))){const gx=x+10,gw=cw-20,gy=by+32,cwc=gw/4;rr(c,gx,gy,gw,56,8,"#17181c","#2a2c33");
           ATTRS.forEach(([k],n)=>{const col4=n%4,row=Math.floor(n/4),cx2=gx+col4*cwc+cwc/2,cy2=gy+6+row*26,v=fmtAttr(k,st[k]);
-            txt(c,SL[k],cx2,cy2+9,9.5,"#7a7c86","650","center");txt(c,v||"—",cx2,cy2+22,12.5,v?"#e7e8ec":"#3f4149","750","center",cwc-4)});
+            txt(c,SL[k],cx2,cy2+9,10,"#8a8c96","650","center");txt(c,v||"—",cx2,cy2+22.5,13,v?"#ffffff":"#3f4149","800","center",cwc-3)});
           for(let q=1;q<4;q++){c.fillStyle="#ffffff0d";c.fillRect(gx+q*cwc,gy+6,1,44)}}
         else{const sd=shellOf(b);txt(c,sd?sd.name:(b.role||""),x+12,by+46,12,"#a3a5ae","500",undefined,cw-24)}}
       else txt(c,it.awk?"Éveil · pas encore de build":"Pas encore de build",x+12,by+18,12,"#6c6e78","500")}
+    c.restore();
   }
   c.fillStyle="#ffffff14";c.fillRect(P,H-48,W-2*P,1);
   txt(c,S.player||"",P,H-20,14,"#a3a5ae","600");
